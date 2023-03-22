@@ -133,10 +133,58 @@ const deleteArticle = async (req, res) => {
   }
 };
 
+//Delete an article
+const editArticle = async (req, res) => {
+  let articleId = req.params.id;
+
+  // Collect the data to save
+  let parameters = req.body;
+
+  // Validate data
+  try {
+    let validateTitle =
+      !validator.isEmpty(parameters.title) &&
+      validator.isLength(parameters.title, { min: 5, max: undefined });
+    let validateContent = !validator.isEmpty(parameters.content);
+
+    if (!validateTitle || !validateContent) {
+      throw new Error("The information has not been validated");
+    }
+  } catch (error) {
+    return res.status(400).json({
+      status: "error",
+      message: "Missing data to send",
+    });
+  }
+
+  // Find and update the article
+  let findArt = await Article.findOneAndUpdate({ _id: articleId }, parameters, { new: true });
+  try {
+    if (!findArt) {
+      return res.status(404).json({
+        status: "error",
+        message: "Failed to update ",
+      });
+    }
+
+    return res.status(200).json({
+      status: "success",
+      message: "Article updated",
+      article: findArt,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      status: "error",
+      message: "Something went wrong!",
+    });
+  }
+};
+
 module.exports = {
   test,
   create,
   listArticles,
   oneArticle,
   deleteArticle,
+  editArticle,
 };

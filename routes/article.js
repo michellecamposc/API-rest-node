@@ -16,6 +16,10 @@ router.get("/article/:id", articleController.oneArticle);
 // Delete method Http
 router.delete("/article/:id", articleController.deleteArticle);
 
+// Edit method Http
+router.put("/article/:id", articleController.editArticle);
+
+
 
 
 module.exports = router;
