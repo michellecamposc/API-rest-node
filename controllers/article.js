@@ -1,3 +1,4 @@
+const res = require("express/lib/response");
 const validator = require("validator");
 const Article = require("../models/Article");
 
@@ -47,12 +48,14 @@ const create = (req, res) => {
     });
 };
 
+
 // Method that returns all the articles saved in the database.
 const listArticles = async (req, res) => {
   try {
     // Finds all documents in the "Article" collection of the database.
-    const articlesDatabase = await Article.find({});
-    if (!articlesDatabase) {
+    // Limit the number of documents returned
+    const consultDatabase = await Article.find({}).sort({ date: -1 }).limit(4);
+    if (!consultDatabase) {
       return res.status(404).json({
         status: "error",
         message: "It have not found articles",
@@ -60,7 +63,7 @@ const listArticles = async (req, res) => {
     }
     return res.status(200).send({
       status: "success",
-      articlesDatabase,
+      consultDatabase,
     });
   }
 
@@ -72,9 +75,42 @@ const listArticles = async (req, res) => {
   }
 };
 
+// Return just one article
+const oneArticle = async (req, res) => {
+  try {
+    // Collect id by url
+    let id = req.params.id;
+
+    // Find the article with findById method
+    let article = await Article.findById(id);
+
+    if (!article) {
+      return res.status(404).json({
+        status: "error",
+        message: "It have not found the article",
+      });
+    }
+
+    // Return the result
+    return res.status(200).json({
+      status: "success",
+      article,
+    });
+  }
+  catch (error) {
+    return res.status(500).json({
+      status: "error",
+      message: "Something went wrong!",
+      error: error.message,
+    });
+  }
+};
+
+
 
 module.exports = {
   test,
   create,
-  listArticles
+  listArticles,
+  oneArticle
 };
