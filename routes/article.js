@@ -11,6 +11,6 @@ router.get("/test-route", articleController.test);
 
 //get "save a resource"
 router.post("/create", articleController.create);
-
+router.get("/articles", articleController.listArticles);
 
 module.exports = router;

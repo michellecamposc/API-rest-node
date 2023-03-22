@@ -47,7 +47,34 @@ const create = (req, res) => {
     });
 };
 
+// Method that returns all the articles saved in the database.
+const listArticles = async (req, res) => {
+  try {
+    // Finds all documents in the "Article" collection of the database.
+    const articlesDatabase = await Article.find({});
+    if (!articlesDatabase) {
+      return res.status(404).json({
+        status: "error",
+        message: "It have not found articles",
+      });
+    }
+    return res.status(200).send({
+      status: "success",
+      articlesDatabase,
+    });
+  }
+
+  catch (error) {
+    return res.status(500).send({
+      status: "error",
+      message: "Internal server error",
+    });
+  }
+};
+
+
 module.exports = {
   test,
   create,
+  listArticles
 };
