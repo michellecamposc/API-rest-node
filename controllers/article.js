@@ -1,6 +1,8 @@
 const res = require("express/lib/response");
 const validator = require("validator");
 const Article = require("../models/Article");
+const { validateArticle } = require("../helpers/validate")
+
 
 const test = (req, res) => {
   return res.status(200).json({
@@ -12,16 +14,9 @@ const create = (req, res) => {
   // Collect the data to save
   let parameters = req.body;
 
-  // Validate data
+  //Validate data
   try {
-    let validateTitle =
-      !validator.isEmpty(parameters.title) &&
-      validator.isLength(parameters.title, { min: 5, max: undefined });
-    let validateContent = !validator.isEmpty(parameters.content);
-
-    if (!validateTitle || !validateContent) {
-      throw new Error("The information has not been validated");
-    }
+    validateArticle(parameters);
   } catch (error) {
     return res.status(400).json({
       status: "error",
@@ -122,34 +117,27 @@ const deleteArticle = async (req, res) => {
 
     return res.status(200).json({
       status: "success",
-      message: "Delete method",
       article: deleteArticle,
+      message: "Delete method"
     });
   } catch (error) {
     return res.status(500).json({
       status: "error",
-      message: "Something went wrong!",
+      message: "Something went wrong!"
     });
   }
 };
 
-//Delete an article
+//Edite an article
 const editArticle = async (req, res) => {
   let articleId = req.params.id;
 
   // Collect the data to save
   let parameters = req.body;
 
-  // Validate data
+  //Validate data
   try {
-    let validateTitle =
-      !validator.isEmpty(parameters.title) &&
-      validator.isLength(parameters.title, { min: 5, max: undefined });
-    let validateContent = !validator.isEmpty(parameters.content);
-
-    if (!validateTitle || !validateContent) {
-      throw new Error("The information has not been validated");
-    }
+    validateArticle(parameters);
   } catch (error) {
     return res.status(400).json({
       status: "error",
