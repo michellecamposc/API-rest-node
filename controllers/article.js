@@ -1,5 +1,5 @@
-const { send } = require("express/lib/response");
 const validator = require("validator");
+const Article = require("../models/Article");
 
 const test = (req, res) => {
   return res.status(200).json({
@@ -14,10 +14,10 @@ const create = (req, res) => {
 
   // Validate data
   try {
-    let validateTittle = !validator.isEmpty(parameters.tittle) && validator.isLength(parameters.tittle, { min: 5, max: undefined });
+    let validateTitle = !validator.isEmpty(parameters.title) && validator.isLength(parameters.title, { min: 5, max: undefined });
     let validateContent = !validator.isEmpty(parameters.content);
 
-    if (!validateTittle || !validateContent) {
+    if (!validateTitle || !validateContent) {
       throw new Error("The information has not been validated");
     }
   } catch (error) {
@@ -27,21 +27,24 @@ const create = (req, res) => {
     });
   }
 
-  // Create the object to save
-
-
-
-
-  // Assign values to the object based on the model
+  // Create the object to save 
+  const article = new Article(parameters); //Assign value based on object
 
   // Save the article in the database
-
-  // Return result
-
-  return res.status(200).json({
-    message: "Save action",
-    parameters,
-  });
+  article.save()
+    .then((articleSaved) => {
+      return res.status(200).json({
+        status: "success",
+        article: articleSaved,
+        message: "Article created successfully"
+      });
+    })
+    .catch((error) => {
+      return res.status(400).json({
+        status: "error", error,
+        message: "The article has not been saved",
+      });
+    });
 };
 
 module.exports = {

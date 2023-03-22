@@ -1,7 +1,7 @@
 const { connection } = require("./database/connection")
 const express = require("express")
 const cors = require("cors");
-const res = require("express/lib/response");
+
 //Initializing app
 console.log("Initializing");
 
