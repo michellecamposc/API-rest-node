@@ -9,13 +9,14 @@ const test = (req, res) => {
 };
 
 const create = (req, res) => {
-
   // Collect the data to save
   let parameters = req.body;
 
   // Validate data
   try {
-    let validateTitle = !validator.isEmpty(parameters.title) && validator.isLength(parameters.title, { min: 5, max: undefined });
+    let validateTitle =
+      !validator.isEmpty(parameters.title) &&
+      validator.isLength(parameters.title, { min: 5, max: undefined });
     let validateContent = !validator.isEmpty(parameters.content);
 
     if (!validateTitle || !validateContent) {
@@ -28,26 +29,27 @@ const create = (req, res) => {
     });
   }
 
-  // Create the object to save 
+  // Create the object to save
   const article = new Article(parameters); //Assign value based on object
 
   // Save the article in the database
-  article.save()
+  article
+    .save()
     .then((articleSaved) => {
       return res.status(200).json({
         status: "success",
         article: articleSaved,
-        message: "Article created successfully"
+        message: "Article created successfully",
       });
     })
     .catch((error) => {
       return res.status(400).json({
-        status: "error", error,
+        status: "error",
+        error,
         message: "The article has not been saved",
       });
     });
 };
-
 
 // Method that returns all the articles saved in the database.
 const listArticles = async (req, res) => {
@@ -65,9 +67,7 @@ const listArticles = async (req, res) => {
       status: "success",
       consultDatabase,
     });
-  }
-
-  catch (error) {
+  } catch (error) {
     return res.status(500).send({
       status: "error",
       message: "Internal server error",
@@ -96,8 +96,7 @@ const oneArticle = async (req, res) => {
       status: "success",
       article,
     });
-  }
-  catch (error) {
+  } catch (error) {
     return res.status(500).json({
       status: "error",
       message: "Something went wrong!",
@@ -106,11 +105,38 @@ const oneArticle = async (req, res) => {
   }
 };
 
+//Delete an article
+const deleteArticle = async (req, res) => {
+  // Collect id by url
+  let articleId = req.params.id;
 
+  // Delete the article with findOneAndDelete method
+  let deleteArticle = await Article.findOneAndDelete({ _id: articleId });
+  try {
+    if (!deleteArticle) {
+      return res.status(404).json({
+        status: "error",
+        message: "Error deleting article",
+      });
+    }
+
+    return res.status(200).json({
+      status: "success",
+      message: "Delete method",
+      article: deleteArticle,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      status: "error",
+      message: "Something went wrong!",
+    });
+  }
+};
 
 module.exports = {
   test,
   create,
   listArticles,
-  oneArticle
+  oneArticle,
+  deleteArticle,
 };

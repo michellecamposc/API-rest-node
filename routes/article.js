@@ -4,13 +4,17 @@ const router = express.Router();
 // Article controller
 const articleController = require("../controllers/article")
 
-//get "returns a resource"
+// Get "returns a resource"
 router.get("/test-route", articleController.test);
 
-//get "save a resource"
+// Get "save a resource"
 router.post("/create", articleController.create);
 router.get("/articles", articleController.listArticles);
 router.get("/article/:id", articleController.oneArticle);
+router.get("/article/:id", articleController.oneArticle);
+
+// Delete method Http
+router.delete("/article/:id", articleController.deleteArticle);
 
 
 
