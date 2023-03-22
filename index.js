@@ -16,9 +16,16 @@ const port = 3900;
 app.use(cors());
 
 //Convert body to js object
-app.use(express.json());
+app.use(express.json()); // Receive the data with content-type app/json
+app.use(express.urlencoded({ extended: true })); //form-urlencoded
 
 //Routes
+const articleRoutes = require("./routes/article");
+
+//Loaded routes
+app.use("/api", articleRoutes);
+
+//Test
 app.get("/testing", (req, res) => {
   console.log("It has been executed on endpoint testing");
 
