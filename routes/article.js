@@ -1,8 +1,16 @@
 const express = require("express");
+const multer = require("multer")
 const router = express.Router();
-
 // Article controller
-const articleController = require("../controllers/article")
+const articleController = require("../controllers/article");
+
+
+//Image storage
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) { cb(null, "./images/articles") }, filename: function (req, file, cb) { cb(null, "article" + Date.now() + file.originalname) }
+});
+
+const uploadImageStorage = multer({ storage: storage })
 
 // Get "returns a resource"
 router.get("/test-route", articleController.test);
@@ -19,7 +27,7 @@ router.delete("/article/:id", articleController.deleteArticle);
 // Edit method Http
 router.put("/article/:id", articleController.editArticle);
 
-
-
+// Upload an image
+router.post("/upload-image/:id", [uploadImageStorage.single("file")], articleController.uploadImage);
 
 module.exports = router;

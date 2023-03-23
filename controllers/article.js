@@ -1,8 +1,9 @@
-const res = require("express/lib/response");
-const validator = require("validator");
 const Article = require("../models/Article");
-const { validateArticle } = require("../helpers/validate")
-
+const { validateArticle } = require("../helpers/validate");
+const path = require("path");
+// Mime is used to describe the data and its format
+const mime = require("mime-types");
+const fs = require("fs");
 
 const test = (req, res) => {
   return res.status(200).json({
@@ -168,6 +169,46 @@ const editArticle = async (req, res) => {
   }
 };
 
+
+// Upload an image
+const uploadImage = (req, res) => {
+
+  // If an image has not been uploaded
+  if (!req.file) {
+    return res.status(400).json({
+      status: "error",
+      message: "No file was uploaded"
+    });
+  }
+
+  // Know the file extension
+  let fileName = req.file.originalname;
+  let fileExtension = path.extname(fileName)
+
+  //Verify the file extension is an image
+  const isImage = mime.lookup(fileExtension).match(/^image\//);
+
+  if (!isImage) {
+    // Delete the file
+    fs.unlink(req.file.path, err => {
+      if (err) {
+        console.log(err)
+      }
+    });
+
+    return res.status(400).json({
+      status: "error",
+      message: "Only image files are allowed"
+    });
+  }
+
+  return res.status(200).json({
+    status: "success",
+    fileExtension,
+    files: req.file
+  });
+}
+
 module.exports = {
   test,
   create,
@@ -175,4 +216,5 @@ module.exports = {
   oneArticle,
   deleteArticle,
   editArticle,
+  uploadImage
 };
