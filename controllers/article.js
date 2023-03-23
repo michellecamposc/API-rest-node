@@ -4,6 +4,8 @@ const path = require("path");
 // Mime is used to describe the data and its format
 const mime = require("mime-types");
 const fs = require("fs");
+const res = require("express/lib/response");
+const { exists } = require("../models/Article");
 
 const test = (req, res) => {
   return res.status(200).json({
@@ -171,7 +173,7 @@ const editArticle = async (req, res) => {
 
 
 // Upload an image
-const uploadImage = (req, res) => {
+const uploadImage = async (req, res) => {
 
   // If an image has not been uploaded
   if (!req.file) {
@@ -200,14 +202,66 @@ const uploadImage = (req, res) => {
       status: "error",
       message: "Only image files are allowed"
     });
-  }
+  } else {
 
-  return res.status(200).json({
-    status: "success",
-    fileExtension,
-    files: req.file
-  });
-}
+    // Collect id by url
+    let articleId = req.params.id;
+
+    // Find and update the article
+    let updatedArticle = await Article.findOneAndUpdate({ _id: articleId }, { image: req.file.filename }, { new: true });
+    try {
+      if (!updatedArticle) {
+        return res.status(404).json({
+          status: "error",
+          message: "Failed to update",
+        });
+      }
+      return res.status(200).json({
+        status: "success",
+        message: "Article updated",
+        article: updatedArticle,
+        file: req.file
+      });
+
+    } catch (error) {
+      return res.status(500).json({
+        status: "error",
+        message: "Something went wrong!",
+
+      });
+    }
+  }
+};
+
+// To show the images
+
+const image = (req, res) => {
+  let file = req.params.file
+  let pathFile = path.join(__dirname, "../images/articles/", file);
+
+  if (fs.existsSync(pathFile)) {
+    res.sendFile(pathFile, {
+      headers: {
+        "Content-Type": "image/png"
+      },
+      maxAge: 3600000
+    }, err => {
+      if (err) {
+        console.error(err);
+        res.status(500).json({
+          status: "error",
+          message: "Error sending image"
+        });
+      }
+    });
+  } else {
+    return res.status(404).json({
+      status: "error",
+      message: "The image does not exist"
+    });
+  }
+};
+
 
 module.exports = {
   test,
@@ -216,5 +270,6 @@ module.exports = {
   oneArticle,
   deleteArticle,
   editArticle,
-  uploadImage
+  uploadImage,
+  image
 };

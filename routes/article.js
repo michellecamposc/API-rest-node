@@ -29,5 +29,6 @@ router.put("/article/:id", articleController.editArticle);
 
 // Upload an image
 router.post("/upload-image/:id", [uploadImageStorage.single("file")], articleController.uploadImage);
+router.get("/image/:file", articleController.image);
 
 module.exports = router;
