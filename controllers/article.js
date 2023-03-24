@@ -5,7 +5,6 @@ const path = require("path");
 const mime = require("mime-types");
 const fs = require("fs");
 const res = require("express/lib/response");
-const { exists } = require("../models/Article");
 
 const test = (req, res) => {
   return res.status(200).json({
@@ -121,12 +120,12 @@ const deleteArticle = async (req, res) => {
     return res.status(200).json({
       status: "success",
       article: deleteArticle,
-      message: "Delete method"
+      message: "Delete method",
     });
   } catch (error) {
     return res.status(500).json({
       status: "error",
-      message: "Something went wrong!"
+      message: "Something went wrong!",
     });
   }
 };
@@ -149,7 +148,9 @@ const editArticle = async (req, res) => {
   }
 
   // Find and update the article
-  let findArt = await Article.findOneAndUpdate({ _id: articleId }, parameters, { new: true });
+  let findArt = await Article.findOneAndUpdate({ _id: articleId }, parameters, {
+    new: true,
+  });
   try {
     if (!findArt) {
       return res.status(404).json({
@@ -171,44 +172,45 @@ const editArticle = async (req, res) => {
   }
 };
 
-
 // Upload an image
 const uploadImage = async (req, res) => {
-
   // If an image has not been uploaded
   if (!req.file) {
     return res.status(400).json({
       status: "error",
-      message: "No file was uploaded"
+      message: "No file was uploaded",
     });
   }
 
   // Know the file extension
   let fileName = req.file.originalname;
-  let fileExtension = path.extname(fileName)
+  let fileExtension = path.extname(fileName);
 
   //Verify the file extension is an image
   const isImage = mime.lookup(fileExtension).match(/^image\//);
 
   if (!isImage) {
     // Delete the file
-    fs.unlink(req.file.path, err => {
+    fs.unlink(req.file.path, (err) => {
       if (err) {
-        console.log(err)
+        console.log(err);
       }
     });
 
     return res.status(400).json({
       status: "error",
-      message: "Only image files are allowed"
+      message: "Only image files are allowed",
     });
   } else {
-
     // Collect id by url
     let articleId = req.params.id;
 
     // Find and update the article
-    let updatedArticle = await Article.findOneAndUpdate({ _id: articleId }, { image: req.file.filename }, { new: true });
+    let updatedArticle = await Article.findOneAndUpdate(
+      { _id: articleId },
+      { image: req.file.filename },
+      { new: true }
+    );
     try {
       if (!updatedArticle) {
         return res.status(404).json({
@@ -220,48 +222,82 @@ const uploadImage = async (req, res) => {
         status: "success",
         message: "Article updated",
         article: updatedArticle,
-        file: req.file
+        file: req.file,
       });
-
     } catch (error) {
       return res.status(500).json({
         status: "error",
         message: "Something went wrong!",
-
       });
     }
   }
 };
 
 // To show the images
-
 const image = (req, res) => {
-  let file = req.params.file
+  let file = req.params.file;
   let pathFile = path.join(__dirname, "../images/articles/", file);
 
   if (fs.existsSync(pathFile)) {
-    res.sendFile(pathFile, {
-      headers: {
-        "Content-Type": "image/png"
+    res.sendFile(
+      pathFile,
+      {
+        headers: {
+          "Content-Type": "image/png",
+        },
+        maxAge: 3600000,
       },
-      maxAge: 3600000
-    }, err => {
-      if (err) {
-        console.error(err);
-        res.status(500).json({
-          status: "error",
-          message: "Error sending image"
-        });
+      (err) => {
+        if (err) {
+          console.error(err);
+          res.status(500).json({
+            status: "error",
+            message: "Error sending image",
+          });
+        }
       }
-    });
+    );
   } else {
     return res.status(404).json({
       status: "error",
-      message: "The image does not exist"
+      message: "The image does not exist",
     });
   }
 };
 
+
+// Search the articles database for those containing a given search string.
+const searcher = (req, res) => {
+  let search = req.params.search;
+
+  Article.find({
+    $or: [
+      // Regex performs case insensitive searches.
+      { title: { $regex: new RegExp(search, "i") } },
+      { content: { $regex: new RegExp(search, "i") } },
+    ],
+  })
+    .sort({ date: -1 })
+    .then((foundArticles) => {
+      if (!foundArticles.length) {
+        return res.status(404).json({
+          status: "error",
+          message: "It has not found articles",
+        });
+      }
+
+      return res.status(200).json({
+        status: "success",
+        articles: foundArticles,
+      });
+    })
+    .catch((error) => {
+      return res.status(500).json({
+        status: "error",
+        message: error.message,
+      });
+    });
+};
 
 module.exports = {
   test,
@@ -271,5 +307,6 @@ module.exports = {
   deleteArticle,
   editArticle,
   uploadImage,
-  image
+  image,
+  searcher,
 };

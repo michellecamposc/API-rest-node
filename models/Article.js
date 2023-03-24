@@ -4,20 +4,20 @@ const { Schema, model } = require("mongoose");
 const ArticleSchema = Schema({
   title: {
     type: String,
-    required: true
+    required: true,
   },
   content: {
     type: String,
-    required: true
+    required: true,
   },
   date: {
     type: Date,
-    default: Date.now
+    default: Date.now,
   },
   image: {
     type: String,
-    default: "default.png"
-  }
+    default: "default.png",
+  },
 });
 
 module.exports = model("Article", ArticleSchema, "articles");

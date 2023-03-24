@@ -31,4 +31,6 @@ router.put("/article/:id", articleController.editArticle);
 router.post("/upload-image/:id", [uploadImageStorage.single("file")], articleController.uploadImage);
 router.get("/image/:file", articleController.image);
 
+router.get("/search/:search", articleController.searcher);
+
 module.exports = router;
